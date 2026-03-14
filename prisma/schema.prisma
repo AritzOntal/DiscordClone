@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  name  String
+  email String  @unique                       
+}
+
+model Server {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?   // Opcional
+  channels    Channel[] // Un servidor tiene una lista de canales (Aqui se hace la relación)
+}
+
+model Channel {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      String  
+
+  // Clave foranea
+
+  serverId  Int
+  server    Server   @relation(fields: [serverId], references: [id])
+
+}
+
