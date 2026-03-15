@@ -16,7 +16,7 @@ export class UsersController {
     @Get(':id')
     async getById(
         @Param('id') id: string) {
-        return this.usersService.findOne(+id) // El "+" lo convierte a numero para el service
+        return await this.usersService.findOne(+id) // El "+" lo convierte a numero para el service
     }
 
     //CON DTOs
@@ -31,13 +31,13 @@ export class UsersController {
         @Param('id') id: string,
         @Body() updateUserDto: UpdateUserDto,
     ) {
-        return this.usersService.modify(+id, updateUserDto)
+        return await this.usersService.modify(+id, updateUserDto)
     }
 
 
-    @Delete('id')
+    @Delete(':id')
     @HttpCode(204) //Forzar a que devuelva 204 si se ha eliminado correctamente
-    deleteUser(@Param('id') id: string): void {
-        this.usersService.remove(+id)
+    async deleteUser(@Param('id') id: string) {
+        return await this.usersService.remove(+id)
     }
 }

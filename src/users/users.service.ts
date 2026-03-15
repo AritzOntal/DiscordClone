@@ -13,7 +13,7 @@ export class UsersService {
     async findAll() {
         try {
 
-            return await this.prisma.user.findMany;
+            return await this.prisma.user.findMany()
 
         } catch (error) {
             throw new InternalServerErrorException('Error al conectar con la base de datos');
@@ -36,16 +36,28 @@ export class UsersService {
     }
 
     async findOne(id: number) {
-        try {
 
-            return await this.prisma.user.findUnique
+        try {
+            const user = await this.prisma.user.findUnique({
+                where: { id: id }
+            })
+
+            // findUnique devuelve null si no encuentra nada, NO lanza error P2025
+            if (!user) {
+                throw new NotFoundException(`El usuario con ID ${id} no existe`);
+            }
+
+            return user
 
         } catch (error) {
-            if (error.code === 'P2025') {
-                throw new NotFoundException('el usuario no existe')
+
+            //Aquí le decimos que si el error a sido 404 deje pasar ese al cliente
+            if (error instanceof NotFoundException) {
+                throw error;
             }
+
+            throw new InternalServerErrorException('Error al buscar el usuario');
         }
-        throw error
     }
 
 
@@ -53,7 +65,7 @@ export class UsersService {
         try {
 
             return await this.prisma.user.update({
-                where: { id: id },   
+                where: { id: id },
                 data: updateUserDto,    // VALORES NUEVOS
             });
 
@@ -67,10 +79,12 @@ export class UsersService {
     }
 
     async remove(id: number) {
+
         try {
             return await this.prisma.user.delete({
                 where: { id },
             });
+
         } catch (error) {
 
             if (error.code === 'P2025') {
@@ -80,8 +94,8 @@ export class UsersService {
             if (error.code === 'P2003') {
                 throw new BadRequestException('No se puede borrar: tiene registros asociados.');
             }
-            // Lanzamos el error original para que NestJS devuelva un 500
-            throw error;
+            
+            throw new InternalServerErrorException('Error inesperado al intentar borrar el usuario');
         }
     }
 }
