@@ -1,48 +1,87 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { User } from './entities/user.entity';
+import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create.user.dto';
+import { UpdateUserDto } from './dto/update.user.dto';
+import { PrismaService } from 'src/prisma.service';
+import { error } from 'console';
 
 //Es inyectable en el constructor del usersController
 @Injectable()
 export class UsersService {
 
-    private users: User[];
+    constructor(private prisma: PrismaService) { }
 
-    //Buscar todos lo usuarios
-    getUsers(): User[] {
-        return this.users;
-    }
+    async findAll() {
+        try {
 
-    getUser(id: number): User {
-        return this.users[id]
-    }
+            return await this.prisma.user.findMany;
 
-    //Crear usuario
-    create(user: CreateUserDto): User {
-        const newId = this.users.length + 1;
-        const newUser = new User(newId, user.name, user.email);
-
-        this.users.push(newUser);
-        return newUser;
-    }
-
-    modify(id: number, name: string, email: string): User {
-
-        const user = this.getUser(id);
-
-        if (!user) {
-            throw new NotFoundException(`El usuario con el id ${id} no existe`);
+        } catch (error) {
+            throw new InternalServerErrorException('Error al conectar con la base de datos');
         }
+    }
 
-        user.name = name;
-        user.email = email;
+    async create(createUserDto: CreateUserDto) {
+        try {
 
-        return user;
+            return await this.prisma.user.create({
+                data: createUserDto,
+            });
+
+        } catch (error) {
+
+            if (error.code === 'P2002') {
+                throw new ConflictException('El email ya está registrado');
+            }
+        }
+    }
+
+    async findOne(id: number) {
+        try {
+
+            return await this.prisma.user.findUnique
+
+        } catch (error) {
+            if (error.code === 'P2025') {
+                throw new NotFoundException('el usuario no existe')
+            }
+        }
+        throw error
     }
 
 
-    remove(id: number): void {
-        // Esto crea una nueva lista de filtrada por todos los que no tenga este ID (es mas seguro porque crea una nueva copia)
-        this.users = this.users.filter(user => user.id !== id);
+    async modify(id: number, updateUserDto: UpdateUserDto) {
+        try {
+
+            return await this.prisma.user.update({
+                where: { id: id },   
+                data: updateUserDto,    // VALORES NUEVOS
+            });
+
+        } catch (error) {
+
+            if (error.code === 'P2025') {
+                throw new NotFoundException(`El usuario con ID ${id} no existe`);
+            }
+            throw error
+        }
+    }
+
+    async remove(id: number) {
+        try {
+            return await this.prisma.user.delete({
+                where: { id },
+            });
+        } catch (error) {
+
+            if (error.code === 'P2025') {
+                throw new NotFoundException(`El usuario con ID ${id} no existe`);
+            }
+
+            if (error.code === 'P2003') {
+                throw new BadRequestException('No se puede borrar: tiene registros asociados.');
+            }
+            // Lanzamos el error original para que NestJS devuelva un 500
+            throw error;
+        }
     }
 }

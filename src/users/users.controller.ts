@@ -1,8 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, HttpCode } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create.user.dto';
-
+import { UpdateUserDto } from './dto/update.user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -10,40 +9,29 @@ export class UsersController {
     constructor(private readonly usersService: UsersService) { }
 
     @Get()
-    get(): User[] {
-        return this.usersService.getUsers()
+    async get() {
+        return await this.usersService.findAll()
     }
 
     @Get(':id')
-    getById(
-        @Param('id') id: string): User {
-        return this.usersService.getUser(+id) // El "+" lo convierte a numero para el service
+    async getById(
+        @Param('id') id: string) {
+        return this.usersService.findOne(+id) // El "+" lo convierte a numero para el service
     }
 
-    /* @Post()
-    create(
-        @Body('name') name: string,
-        @Body('email') email: string
-    ): User {
-        return this.usersService.create(name, email)
-    } */
-
-
-    //CON DTOS
+    //CON DTOs
     @Post()
-    create(@Body() createUserDto: CreateUserDto): User { 
-        // Ahora el @Body está vacío
-        // Pero lo atrapa y lo convierte en un objeto createUserDto
-        return this.usersService.create(createUserDto);
+    async create(@Body() createUserDto: CreateUserDto) {
+        // Ahora el @Body está vacío, pero lo atrapa y lo convierte en un objeto createUserDto
+        return await this.usersService.create(createUserDto);
     }
 
     @Put(':id')
-    update(
+    async update(
         @Param('id') id: string,
-        @Body('name') name: string,
-        @Body('email') email: string
-    ): User {
-        return this.usersService.modify(+id, name, email)
+        @Body() updateUserDto: UpdateUserDto,
+    ) {
+        return this.usersService.modify(+id, updateUserDto)
     }
 
 
