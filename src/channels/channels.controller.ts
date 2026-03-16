@@ -2,17 +2,16 @@ import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, UseGuards, R
 import { ChannelsService } from './channels.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Ajusta la ruta según tu carpeta
 
 @Controller('channels')
 export class ChannelsController {
   constructor(private readonly channelsService: ChannelsService) { }
 
-  @UseGuards()
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() createChannelDto: CreateChannelDto, @Request() req ) {
-
     const userId = req.user.userId
-
     return await this.channelsService.create(createChannelDto, userId);
   }
 
