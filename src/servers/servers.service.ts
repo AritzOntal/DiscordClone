@@ -21,9 +21,8 @@ export class ServersService {
     } catch (error) {
 
       throw error
-
+      
     }
-
   }
 
   async findAll() {

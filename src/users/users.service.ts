@@ -2,12 +2,38 @@ import { Injectable, NotFoundException, ConflictException, InternalServerErrorEx
 import { CreateUserDto } from './dto/create.user.dto';
 import { UpdateUserDto } from './dto/update.user.dto';
 import { PrismaService } from 'src/prisma.service';
+import * as bcrypt from 'bcrypt';
+
 
 //Es inyectable en el constructor del usersController
 @Injectable()
 export class UsersService {
 
     constructor(private prisma: PrismaService) { }
+
+    async create(createUserDto: CreateUserDto) {
+        try {
+
+            //Sacamos el pasword del DTO
+            const { password, ...restOfData } = createUserDto;
+            //instanciamos el Salt y lo encriptamos
+            const salt = await bcrypt.genSalt();
+            const hashedPassword = await bcrypt.hash(password, salt);
+
+            return await this.prisma.user.create({
+                data: {
+                    ...restOfData,
+                    password: hashedPassword
+                }
+            });
+
+        } catch (error) {
+
+            if (error.code === 'P2002') {
+                throw new ConflictException('El email ya está registrado');
+            }
+        }
+    }
 
     async findAll() {
         try {
@@ -16,21 +42,6 @@ export class UsersService {
 
         } catch (error) {
             throw new InternalServerErrorException('Error al conectar con la base de datos');
-        }
-    }
-
-    async create(createUserDto: CreateUserDto) {
-        try {
-
-            return await this.prisma.user.create({
-                data: createUserDto,
-            });
-
-        } catch (error) {
-
-            if (error.code === 'P2002') {
-                throw new ConflictException('El email ya está registrado');
-            }
         }
     }
 
@@ -95,5 +106,12 @@ export class UsersService {
             }
             throw new InternalServerErrorException('Error inesperado al intentar borrar el usuario');
         }
+    }
+
+    async findOneByEmail(email: string) {
+        // Directo y sin vueltas: si existe lo da, si no, da null.
+        return await this.prisma.user.findUnique({
+            where: { email }
+        });
     }
 }
