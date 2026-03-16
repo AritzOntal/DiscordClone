@@ -2,8 +2,6 @@ import { Injectable, NotFoundException, ConflictException, InternalServerErrorEx
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
 import { PrismaService } from 'src/prisma.service';
-import { connect } from 'http2';
-
 
 @Injectable()
 export class ServersService {
