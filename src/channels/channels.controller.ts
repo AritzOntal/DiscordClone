@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, UseGuards, Request } from '@nestjs/common';
 import { ChannelsService } from './channels.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
@@ -7,9 +7,13 @@ import { UpdateChannelDto } from './dto/update-channel.dto';
 export class ChannelsController {
   constructor(private readonly channelsService: ChannelsService) { }
 
+  @UseGuards()
   @Post()
-  async create(@Body() createChannelDto: CreateChannelDto) {
-    return await this.channelsService.create(createChannelDto);
+  async create(@Body() createChannelDto: CreateChannelDto, @Request() req ) {
+
+    const userId = req.user.userId
+
+    return await this.channelsService.create(createChannelDto, userId);
   }
 
   @Get()

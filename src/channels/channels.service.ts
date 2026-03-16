@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
 import { PrismaService } from 'src/prisma.service';
@@ -8,15 +8,23 @@ export class ChannelsService {
 
   constructor(private prisma: PrismaService) { }
 
-  async create(createChannelDto: CreateChannelDto) {
-    try {
-      return await this.prisma.channel.create({
-        data: createChannelDto,
-      })
+  async create(createChannelDto: CreateChannelDto, userId: number) {
 
-    } catch (error) {
-      throw error
+    const server = await this.prisma.server.findUnique({
+      where: { id: createChannelDto.serverId }
+    })
+
+    if (!server) {
+      throw new NotFoundException('El servidor no existe');
     }
+
+    if (server.ownerId !== userId) {
+      throw new ForbiddenException('No tienes permiso para crear canales en este servidor');
+    }
+
+    return await this.prisma.channel.create({
+      data: createChannelDto,
+    })
   }
 
   async findAll() {
