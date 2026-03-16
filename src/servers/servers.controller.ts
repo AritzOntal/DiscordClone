@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode } from '@nestjs/common';
 import { ServersService } from './servers.service';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
@@ -8,27 +8,28 @@ export class ServersController {
   constructor(private readonly serversService: ServersService) {}
 
   @Post()
-  create(@Body() createServerDto: CreateServerDto) {
-    return this.serversService.create(createServerDto);
+  async create(@Body() createServerDto: CreateServerDto) {
+    return await this.serversService.create(createServerDto);
   }
 
   @Get()
-  findAll() {
-    return this.serversService.findAll();
+  async findAll() {
+    return await this.serversService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.serversService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.serversService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateServerDto: UpdateServerDto) {
-    return this.serversService.update(+id, updateServerDto);
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() updateServerDto: UpdateServerDto) {
+    return await this.serversService.update(+id, updateServerDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.serversService.remove(+id);
+  @HttpCode(204)
+  async remove(@Param('id') id: string) {
+    return await this.serversService.remove(+id);
   }
 }

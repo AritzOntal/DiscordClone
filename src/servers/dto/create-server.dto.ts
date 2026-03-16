@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength, IsOptional } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, MinLength, IsOptional, IsNumber } from "class-validator";
 
 
 export class CreateServerDto {
@@ -11,4 +11,7 @@ export class CreateServerDto {
     @IsString()
     @IsNotEmpty({ message: 'Tienes que tener una descripción' })
     description: string;
+
+    @IsNumber()
+    ownerId: number;
 }

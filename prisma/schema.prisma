@@ -15,13 +15,19 @@ datasource db {
 model User {
   id    Int     @id @default(autoincrement())
   name  String
-  email String  @unique                       
+  email String  @unique     
+  servers Server[]                  
 }
 
 model Server {
   id          Int       @id @default(autoincrement())
   name        String
   description String?   // Opcional
+
+  //esta relacion es N --> 1 (el enbudo se hace desde N servers a user 1)
+  ownerId     Int
+  owner       User      @relation(fields: [ownerId], references: [id])
+
   channels    Channel[] // Un servidor tiene una lista de canales (Aqui se hace la relación)
 }
 
@@ -33,7 +39,7 @@ model Channel {
   // Clave foranea
 
   serverId  Int
-  server    Server   @relation(fields: [serverId], references: [id])
+  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
 }
 

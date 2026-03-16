@@ -2,7 +2,6 @@ import { Injectable, NotFoundException, ConflictException, InternalServerErrorEx
 import { CreateUserDto } from './dto/create.user.dto';
 import { UpdateUserDto } from './dto/update.user.dto';
 import { PrismaService } from 'src/prisma.service';
-import { error } from 'console';
 
 //Es inyectable en el constructor del usersController
 @Injectable()
@@ -94,7 +93,6 @@ export class UsersService {
             if (error.code === 'P2003') {
                 throw new BadRequestException('No se puede borrar: tiene registros asociados.');
             }
-            
             throw new InternalServerErrorException('Error inesperado al intentar borrar el usuario');
         }
     }
