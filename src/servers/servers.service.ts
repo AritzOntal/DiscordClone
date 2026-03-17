@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException,ForbiddenException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
 import { PrismaService } from 'src/prisma.service';
@@ -75,14 +75,19 @@ export class ServersService {
 
   async update(id: number, updateServerDto: UpdateServerDto, userId: number) {
     try {
-      //buscamos si el user del TOKEN corresponde al owner
-      const owner = await this.prisma.server.findFirst({
-        where: { ownerId: userId }
+      //Si hay algun servidor donde el id sea el numer del userId...
+      const server = await this.prisma.server.findFirst({
+        where: { id: id}
       })
 
-      if (!owner) {
-        throw new ForbiddenException('No tienes permiso para editar este servidor');
+      //Descartamos si no existe
+      if (!server) {
+        throw new NotFoundException('El servidor no existe');
+      }
 
+      //Comprobamos 
+      if (server.ownerId !== userId) {
+        throw new ForbiddenException('No tienes permiso para editar este servidor');
       }
 
       return await this.prisma.server.update({

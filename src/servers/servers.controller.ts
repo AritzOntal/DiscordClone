@@ -26,7 +26,8 @@ export class ServersController {
   async findOne(@Param('id') id: string) {
     return await this.serversService.findOne(+id);
   }
-
+  
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateServerDto: UpdateServerDto, @Request() req) {
     const userId = req.user.userId
