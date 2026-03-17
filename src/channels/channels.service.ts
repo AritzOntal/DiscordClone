@@ -18,6 +18,7 @@ export class ChannelsService {
       throw new NotFoundException('El servidor no existe');
     }
 
+    //COMPARA EL idUser de TOKEN con el owner de Server
     if (server.ownerId !== userId) {
       throw new ForbiddenException('No tienes permiso para crear canales en este servidor');
     }

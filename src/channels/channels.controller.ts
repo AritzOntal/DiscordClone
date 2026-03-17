@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, UseGuards, R
 import { ChannelsService } from './channels.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Ajusta la ruta según tu carpeta
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('channels')
 export class ChannelsController {

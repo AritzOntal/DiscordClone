@@ -7,18 +7,28 @@ generator client {
   provider = "prisma-client-js"
 }
 
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+
 model User {
   id    Int     @id @default(autoincrement())
   name  String
   email String  @unique
-  password String     
-  servers Server[]                  
+  password String
+
+  //Los que soy dueño
+  ownedServers Server[]   @relation("OwnedServers")
+
+  //A los que me he unido
+  memberServers Server[]  @relation("ServerMembers")
+
+  messages Message[]                  
 }
+
 
 model Server {
   id          Int       @id @default(autoincrement())
@@ -27,10 +37,14 @@ model Server {
 
   //esta relacion es N --> 1 (el enbudo se hace desde N servers a user 1)
   ownerId     Int
-  owner       User      @relation(fields: [ownerId], references: [id])
+  owner       User      @relation("OwnedServers", fields: [ownerId], references: [id])
+
+  //relacion con los miembros
+  members     User[]    @relation("ServerMembers")
 
   channels    Channel[] // Un servidor tiene una lista de canales (Aqui se hace la relación)
 }
+
 
 model Channel {
   id        Int      @id @default(autoincrement())
@@ -42,5 +56,21 @@ model Channel {
   serverId  Int
   server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
+  messages Message[]
+}
+
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.Text // permite mesajes largos
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //Si el usuario se borra el menssage se queda pero apunta a un usuario NULL (SetNull)
+  authorId  Int?
+  author    User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  channelId Int
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
 }
 

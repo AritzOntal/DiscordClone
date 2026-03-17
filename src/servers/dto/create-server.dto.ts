@@ -14,4 +14,8 @@ export class CreateServerDto {
 
     @IsNumber()
     ownerId: number;
+
+    @IsNotEmpty()
+    members: number[]
+
 }

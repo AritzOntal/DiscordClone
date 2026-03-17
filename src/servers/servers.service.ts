@@ -13,13 +13,24 @@ export class ServersService {
     try {
 
       return await this.prisma.server.create({
-        data: createServerDto,
-      })
+        data: {
+          name: createServerDto.name,
+          description: createServerDto.description,
+          // Conectamos al dueño
+          owner: {
+            connect: { id: createServerDto.ownerId }
+          },
+          // Transformamos [1, 2, 3] en [{id: 1}, {id: 2}, {id: 3}]
+          members: {
+            connect: createServerDto.members?.map(memberId => ({ id: Number(memberId) }))
+          }
+        }
+      });
 
     } catch (error) {
 
       throw error
-      
+
     }
   }
 
@@ -42,7 +53,7 @@ export class ServersService {
       const server = await this.prisma.server.findUnique({
         where: { id: id }
       })
-      
+
       if (!server) {
         throw new NotFoundException(`El usuario con ID ${id} no existe`);
       }
@@ -51,7 +62,7 @@ export class ServersService {
 
     } catch (error) {
 
-      //Aquí le decimos que si el error a sido 404 deje pasar ese al cliente
+      //Aquí le decimos que si el error a sido 404 deje pasarlo
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -59,22 +70,27 @@ export class ServersService {
   }
 
   async update(id: number, updateServerDto: UpdateServerDto) {
+
     try {
 
       return await this.prisma.server.update({
-        where: {id: id},
-        data: updateServerDto,
+        where: { id: id },
+        data: {
+          name: updateServerDto.name,
+          description: updateServerDto.description,
+          // Transformamos [1, 2, 3] en [{id: 1}, {id: 2}, {id: 3}]
+          members: {
+            connect: updateServerDto.members?.map(memberId => ({ id: Number(memberId) }))
+          }
+        }
       })
 
     } catch (error) {
 
       if (error.code === 'P2025') {
-      throw new NotFoundException(`El servidor con ID ${id} no existe`);
-    }
-    
-    if (error.code === 'P2003') {
-      throw new BadRequestException(`El nuevo dueño (ID ${updateServerDto.ownerId}) no existe`);
-    }
+        throw new NotFoundException(`El servidor con ID ${id} no existe`);
+      }
+
       throw error
     }
   }
