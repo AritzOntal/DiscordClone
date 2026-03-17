@@ -106,7 +106,7 @@ export class ServersService {
     } catch (error) {
 
       if (error.code === 'P2025') {
-        throw new NotFoundException(`El servidor con ID ${id} no existe`);
+        throw new NotFoundException(`Un usuario al que quieres conectar no existe`);
       }
 
       throw error
