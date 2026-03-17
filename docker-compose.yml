@@ -11,8 +11,21 @@ services:
       POSTGRES_DB: discord_db
     ports:
       - "5432:5432"
-    volumes: 
+    volumes:
       - postgres_data:/var/lib/postgresql/data
-      
+
+  api:
+    #Aqui es donde compila el Dockerfile
+    build: .
+    container_name: discord_api
+    ports:
+      - "3000:3000"
+    environment:
+      # Credenciales y URL
+      DATABASE_URL: postgresql://aritz:aritz@postgres-db:5432/discord_db?schema=public
+      SECRET: SECRET
+    depends_on:
+      - postgres-db # Arranca la DB antes que la API
+
 volumes:
-  postgres_data:
+  postgres_data: # Crea este volumen que sera donde guarde en local todo lo de la DB. (unidos por un cable)
