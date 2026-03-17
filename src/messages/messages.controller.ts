@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Request} from '@nestjs/common';
+import { Controller, Post, Get, Body, Request } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UseGuards } from '@nestjs/common';
@@ -7,7 +7,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('messages')
 export class MessagesController {
-  constructor(private readonly messagesService: MessagesService) {}
+  constructor(private readonly messagesService: MessagesService) { }
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -18,9 +18,10 @@ export class MessagesController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async getAll() {
-    return await this.messagesService.findAll()
+  async getAll(@Request() req) {
 
+    const userId = req.user.userId
+    return await this.messagesService.findAll(+userId)
   }
 
 }

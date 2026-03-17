@@ -1,7 +1,7 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { PrismaService } from 'src/prisma.service';
-import { audit } from 'rxjs';
+
 
 @Injectable()
 export class MessagesService {
@@ -45,11 +45,21 @@ export class MessagesService {
     });
   }
 
-  async findAll() {
-      return await this.prisma.message.findMany({
-        include: {
-          author: true
+  async findAll(userId: number) {
+    //ENSEÑAR SOLO MENSAJES DE SERVIDORES DONDE ESTÉ ESTE USUARIO
+    //CON SOME PODEMOS TRAER SOLO ESOS DESPUES DE WHERE
+    const messages = await this.prisma.message.findMany({
+      where: {
+        channel: {
+          server: {
+            members: {
+              some: { id: userId } // "Trae mensajes donde algún miembro del servidor sea este ID"
+            }
+          }
         }
-      })
+      }
+    })
+
+    return messages
   }
 }
