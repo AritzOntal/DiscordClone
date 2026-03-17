@@ -12,9 +12,6 @@ export class CreateServerDto {
     @IsNotEmpty({ message: 'Tienes que tener una descripción' })
     description: string;
 
-    @IsNumber()
-    ownerId: number;
-
     @IsNotEmpty()
     members: number[]
 

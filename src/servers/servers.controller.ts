@@ -1,15 +1,20 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, UseGuards, Request } from '@nestjs/common';
 import { ServersService } from './servers.service';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
+
 
 @Controller('servers')
 export class ServersController {
   constructor(private readonly serversService: ServersService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Body() createServerDto: CreateServerDto) {
-    return await this.serversService.create(createServerDto);
+  async create(@Body() createServerDto: CreateServerDto, @Request() req) {
+    const userId = req.user.userId
+    return await this.serversService.create(createServerDto, userId);
   }
 
   @Get()
@@ -23,8 +28,9 @@ export class ServersController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateServerDto: UpdateServerDto) {
-    return await this.serversService.update(+id, updateServerDto);
+  async update(@Param('id') id: string, @Body() updateServerDto: UpdateServerDto, @Request() req) {
+    const userId = req.user.userId
+    return await this.serversService.update(+id, updateServerDto, userId);
   }
 
   @Delete(':id')

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException,ForbiddenException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
 import { PrismaService } from 'src/prisma.service';
@@ -8,7 +8,7 @@ export class ServersService {
 
   constructor(private prisma: PrismaService) { }
 
-  async create(createServerDto: CreateServerDto) {
+  async create(createServerDto: CreateServerDto, userId: number) {
 
     try {
 
@@ -18,7 +18,7 @@ export class ServersService {
           description: createServerDto.description,
           // Conectamos al dueño
           owner: {
-            connect: { id: createServerDto.ownerId }
+            connect: { id: userId }
           },
           // Transformamos [1, 2, 3] en [{id: 1}, {id: 2}, {id: 3}]
           members: {
@@ -37,7 +37,11 @@ export class ServersService {
   async findAll() {
     try {
 
-      return await this.prisma.server.findMany()
+      return await this.prisma.server.findMany({
+        include: {
+          members: true
+        }
+      })
 
     } catch {
 
@@ -69,18 +73,27 @@ export class ServersService {
     }
   }
 
-  async update(id: number, updateServerDto: UpdateServerDto) {
-
+  async update(id: number, updateServerDto: UpdateServerDto, userId: number) {
     try {
+      //buscamos si el user del TOKEN corresponde al owner
+      const owner = await this.prisma.server.findFirst({
+        where: { ownerId: userId }
+      })
+
+      if (!owner) {
+        throw new ForbiddenException('No tienes permiso para editar este servidor');
+
+      }
 
       return await this.prisma.server.update({
+
         where: { id: id },
         data: {
           name: updateServerDto.name,
           description: updateServerDto.description,
           // Transformamos [1, 2, 3] en [{id: 1}, {id: 2}, {id: 3}]
           members: {
-            connect: updateServerDto.members?.map(memberId => ({ id: Number(memberId) }))
+            connect: updateServerDto.members?.map(memberId => ({ id: Number(memberId) })),
           }
         }
       })
@@ -94,6 +107,7 @@ export class ServersService {
       throw error
     }
   }
+
 
   async remove(id: number) {
     try {
