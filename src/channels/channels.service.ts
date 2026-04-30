@@ -52,30 +52,46 @@ export class ChannelsService {
     }
   }
 
-  async update(id: number, updateChannelDto: UpdateChannelDto) {
+  async update(id: number, updateChannelDto: UpdateChannelDto, userId: number) {
 
-    try {
-      return await this.prisma.channel.update({
-        where: { id: id },
-        data: updateChannelDto,
-      })
+  // 1. Buscamos el canal y traemos su server con un JOIN
+  const channel = await this.prisma.channel.findUnique({
+    where: { id },
+    include: { server: true },
+  });
 
-    } catch (error) {
-
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`El canal con ID ${id} no existe`);
-      }
-      throw error
-    }
+  if (!channel) {
+    throw new NotFoundException(`El canal con ID ${id} no existe`);
   }
 
-  async remove(id: number) {
-    try {
-      return await this.prisma.channel.delete({
-        where: { id: id }
-      })
-    } catch {
-
-    }
+  // Si el dueño del server no es el mismo que el Owner
+  if (channel.server.ownerId !== userId) {
+    throw new ForbiddenException('Sólo el dueño del servidor puede editar canales');
   }
+
+  return await this.prisma.channel.update({
+    where: { id },
+    data: updateChannelDto,
+  });
+}
+
+  async remove(id: number, userId: number) {
+
+  const channel = await this.prisma.channel.findUnique({
+    where: { id },
+    include: { server: true },
+  });
+
+  if (!channel) {
+    throw new NotFoundException(`El canal con ID ${id} no existe`);
+  }
+
+  if (channel.server.ownerId !== userId) {
+    throw new ForbiddenException('Sólo el dueño del servidor puede borrar canales');
+  }
+
+  return await this.prisma.channel.delete({
+    where: { id },
+  });
+}
 }

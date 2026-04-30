@@ -10,7 +10,7 @@ export class ChannelsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Body() createChannelDto: CreateChannelDto, @Request() req ) {
+  async create(@Body() createChannelDto: CreateChannelDto, @Request() req) {
     const userId = req.user.userId
     return await this.channelsService.create(createChannelDto, userId);
   }
@@ -25,14 +25,22 @@ export class ChannelsController {
     return await this.channelsService.findOne(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateChannelDto: UpdateChannelDto) {
-    return await this.channelsService.update(+id, updateChannelDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateChannelDto: UpdateChannelDto,
+    @Request() req,
+  ) {
+    const userId = req.user.userId;
+    return await this.channelsService.update(+id, updateChannelDto, userId);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  @HttpCode(204) //Forzar a que devuelva 204 si se ha eliminado correctamente
-  async remove(@Param('id') id: string) {
-    return await this.channelsService.remove(+id);
+  @HttpCode(204)
+  async remove(@Param('id') id: string, @Request() req) {
+    const userId = req.user.userId;
+    return await this.channelsService.remove(+id, userId);
   }
 }

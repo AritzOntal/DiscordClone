@@ -8,7 +8,7 @@ import { AuthGuard } from '@nestjs/passport';
 
 @Controller('servers')
 export class ServersController {
-  constructor(private readonly serversService: ServersService) {}
+  constructor(private readonly serversService: ServersService) { }
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -26,7 +26,7 @@ export class ServersController {
   async findOne(@Param('id') id: string) {
     return await this.serversService.findOne(+id);
   }
-  
+
   @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateServerDto: UpdateServerDto, @Request() req) {
@@ -37,7 +37,8 @@ export class ServersController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @HttpCode(204)
-  async remove(@Param('id') id: string) {
-    return await this.serversService.remove(+id);
+  async remove(@Param('id') id: string, @Request() req) {
+    const userId = req.user.userId;
+    return await this.serversService.remove(+id, userId);
   }
 }
