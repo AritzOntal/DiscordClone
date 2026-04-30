@@ -5,8 +5,10 @@
 import { ServersModule } from './servers/servers.module';
 import { ChannelsModule } from './channels/channels.module';
 import { AuthModule } from './auth/auth.module';
-import { JwtModule } from '@nestjs/jwt';
 import { MessagesModule } from './messages/messages.module';
+import { NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
+
 
   @Module({
     imports: [UsersModule, ServersModule, ChannelsModule, AuthModule, MessagesModule],
@@ -14,6 +16,8 @@ import { MessagesModule } from './messages/messages.module';
     providers: [AppService],
   })
 
-  export class AppModule {
-    
+  export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
   }
+}
