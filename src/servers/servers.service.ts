@@ -9,26 +9,26 @@ export class ServersService {
   constructor(private prisma: PrismaService) { }
 
   async create(createServerDto: CreateServerDto, userId: number) {
-  try {
-    return await this.prisma.server.create({
-      data: {
-        name: createServerDto.name,
-        description: createServerDto.description,
-        owner: {
-          connect: { id: userId }
-        },
-        members: {
-          connect: [
-            { id: userId },
-            ...(createServerDto.members?.map(memberId => ({ id: Number(memberId) })) ?? []),
-          ]
+    try {
+      return await this.prisma.server.create({
+        data: {
+          name: createServerDto.name,
+          description: createServerDto.description,
+          owner: {
+            connect: { id: userId }
+          },
+          members: {
+            connect: [
+              { id: userId },
+              ...(createServerDto.members?.map(memberId => ({ id: Number(memberId) })) ?? []),
+            ]
+          }
         }
-      }
-    });
-  } catch (error) {
-    throw error
+      });
+    } catch (error) {
+      throw error
+    }
   }
-}
 
   async findAll() {
     try {
@@ -73,7 +73,7 @@ export class ServersService {
     try {
       //Si hay algun servidor donde el id sea el numer del userId...
       const server = await this.prisma.server.findFirst({
-        where: { id: id}
+        where: { id: id }
       })
 
       //Descartamos si no existe
@@ -110,17 +110,31 @@ export class ServersService {
   }
 
 
-  async remove(id: number) {
+  async remove(id: number, userId: number) {
     try {
+      // Buscamos el servidor
+      const server = await this.prisma.server.findUnique({
+        where: { id },
+      });
+
+      if (!server) {
+        throw new NotFoundException('El servidor no existe');
+      }
+
+      // Si existe pero no es el dueño
+      if (server.ownerId !== userId) {
+        throw new ForbiddenException('No tienes permiso para borrar este servidor');
+      }
 
       return await this.prisma.server.delete({
         where: { id },
       });
 
     } catch (error) {
-
-      throw error
-
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
+        throw error;
+      }
+      throw error;
     }
   }
 }
