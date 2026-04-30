@@ -28,4 +28,4 @@ services:
       - postgres-db # Arranca la DB antes que la API
 
 volumes:
-  postgres_data: # Crea este volumen que sera donde guarde en local todo lo de la DB. (unidos por un cable)
+  postgres_data: # Crea este volumen que sera donde guarde en local todo lo de la DB
