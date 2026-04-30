@@ -9,30 +9,26 @@ export class ServersService {
   constructor(private prisma: PrismaService) { }
 
   async create(createServerDto: CreateServerDto, userId: number) {
-
-    try {
-
-      return await this.prisma.server.create({
-        data: {
-          name: createServerDto.name,
-          description: createServerDto.description,
-          // Conectamos al dueño
-          owner: {
-            connect: { id: userId }
-          },
-          // Transformamos [1, 2, 3] en [{id: 1}, {id: 2}, {id: 3}]
-          members: {
-            connect: createServerDto.members?.map(memberId => ({ id: Number(memberId) }))
-          }
+  try {
+    return await this.prisma.server.create({
+      data: {
+        name: createServerDto.name,
+        description: createServerDto.description,
+        owner: {
+          connect: { id: userId }
+        },
+        members: {
+          connect: [
+            { id: userId },
+            ...(createServerDto.members?.map(memberId => ({ id: Number(memberId) })) ?? []),
+          ]
         }
-      });
-
-    } catch (error) {
-
-      throw error
-
-    }
+      }
+    });
+  } catch (error) {
+    throw error
   }
+}
 
   async findAll() {
     try {
