@@ -3,9 +3,9 @@ import { IsString, IsNotEmpty, IsInt } from 'class-validator';
 export class CreateMessageDto {
     @IsString()
     @IsNotEmpty()
-    content: string;
+    content!: string;
 
     @IsInt()
     @IsNotEmpty()
-    channelId: number;
+    channelId!: number;
 }
