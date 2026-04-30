@@ -34,6 +34,7 @@ export class ServersController {
     return await this.serversService.update(+id, updateServerDto, userId);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @HttpCode(204)
   async remove(@Param('id') id: string) {
