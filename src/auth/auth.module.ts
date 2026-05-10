@@ -6,17 +6,15 @@ import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from 'src/users/users.module';
 import { JwtStrategy } from './jwt.strategy';
 
+//Importamos UserModule para buscar usuarios
 @Module({
-  imports: [
-    UsersModule,
-    PassportModule,
-    JwtModule.register({
-      secret: 'SECRET', 
+  imports: [ UsersModule, PassportModule, JwtModule.register({
+      secret: 'SECRET',
       signOptions: { expiresIn: '24h' },
     }),
   ],
   controllers: [AuthController],
-  // AÑADE JwtStrategy AQUÍ ABAJO 👇
-  providers: [AuthService, JwtStrategy], 
+  // AÑADE JwtStrategy
+  providers: [AuthService, JwtStrategy],
 })
-export class AuthModule {}
+export class AuthModule { }

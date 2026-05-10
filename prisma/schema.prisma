@@ -35,7 +35,7 @@ model Server {
   name        String
   description String?   // Opcional
 
-  //esta relacion es N --> 1 (el enbudo se hace desde N servers a user 1)
+  //N --> 1 (el enbudo se hace desde N servers a user 1)
   ownerId     Int
   owner       User      @relation("OwnedServers", fields: [ownerId], references: [id])
 

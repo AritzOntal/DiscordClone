@@ -22,7 +22,6 @@ export class UsersController {
     //CON DTOs
     @Post()
     async create(@Body() createUserDto: CreateUserDto) {
-        // Ahora el @Body está vacío, pero lo atrapa y lo convierte en un objeto createUserDto
         return await this.usersService.create(createUserDto);
     }
 
