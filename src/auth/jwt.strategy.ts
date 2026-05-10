@@ -2,6 +2,8 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 
+//Al hacer peticion LOGIN esta estrategy se registra en el Passport (jwt)
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor() {
@@ -12,8 +14,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
     }
 
+    //Cuando passPort reconoce el token correcto, decodifica y se lo pasa aqui
     async validate(payload: any) {
-        // Esto es lo que se inyectará en req.user
+        // Si el token es válido devolverá estos campos
         return { userId: payload.sub, email: payload.email };
+        //Con esto validaremos si el usuario es correcto en los Services
     }
 }
