@@ -1,98 +1,94 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# DiscordClone API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST que reproduce el modelo de datos y la lógica básica de Discord: usuarios, servidores, canales y mensajes. Desarrollada con **NestJS y TypeScript**, con **Prisma** sobre **PostgreSQL** y entorno contenerizado con **Docker Compose**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Funcionalidades
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Registro e inicio de sesión con **JWT** (Passport, `JwtStrategy` y `JwtAuthGuard` para proteger rutas).
+- Creación de **servidores**, con un usuario propietario y miembros.
+- **Canales** dentro de cada servidor.
+- **Mensajes** en los canales, con fecha de creación y de edición.
+- **Autorización por pertenencia**: un usuario solo puede leer y escribir mensajes en los servidores de los que es miembro.
+- Middleware común para el tratamiento de las peticiones.
 
-## Project setup
+---
 
-```bash
-$ npm install
+## Seguridad y autorización
+
+
+```mermaid
+flowchart LR
+    R[Petición] --> G{JwtAuthGuard<br/>¿token válido?}
+    G -- No --> E1[401 Unauthorized]
+    G -- Sí --> M{¿Es miembro<br/>del servidor?}
+    M -- No --> E2[403 Forbidden]
+    M -- Sí --> OK[Acceso a los mensajes]
 ```
 
-## Compile and run the project
+- El `userId` se obtiene siempre del **token JWT**.
+- **Escribir un mensaje**: antes de crearlo, se carga el canal con su servidor y se comprueba si el usuario está entre sus miembros. Si no lo está, se devuelve `403 Forbidden`.
+- **Leer mensajes**: la consulta de Prisma filtra en la propia base de datos (`members: { some: { id: userId } }`), de modo que solo se devuelven mensajes de los servidores del usuario.
 
-```bash
-# development
-$ npm run start
+---
 
-# watch mode
-$ npm run start:dev
+## Modelo de datos
 
-# production mode
-$ npm run start:prod
+```mermaid
+flowchart LR
+    U[Usuario] -- dueño o miembro --> S[Servidor] --> C[Canal] --> M[Mensaje]
+    U -- escribe --> M
 ```
 
-## Run tests
+Decisiones de diseño:
 
-```bash
-# unit tests
-$ npm run test
+- **Relación N:N** entre usuarios y servidores para los miembros, separada de la relación de propiedad.
+- **Borrado en cascada** de canales y mensajes al eliminar un servidor o un canal.
+- Si se elimina un usuario, sus mensajes se conservan con el autor a `null` (`onDelete: SetNull`), como hace Discord.
 
-# e2e tests
-$ npm run test:e2e
+---
 
-# test coverage
-$ npm run test:cov
+## Estructura
+
+```
+src/
+├── auth/        Login, registro, estrategia y guard JWT
+├── users/       Usuarios
+├── servers/     Servidores y miembros
+├── channels/    Canales
+├── messages/    Mensajes
+├── common/      Middleware compartido
+└── prisma.service.ts
+prisma/
+└── schema.prisma
 ```
 
-## Deployment
+Cada dominio es un módulo de NestJS con su *controller*, *service* y DTOs, siguiendo la inyección de dependencias del framework.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Stack
+
+TypeScript · Node.js · NestJS · Prisma ORM · PostgreSQL · JWT (Passport) · Docker · Docker Compose · ESLint · Prettier
+
+---
+
+## Ejecución en local
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# 1. Crear un archivo .env con las variables de entorno
+#    (DATABASE_URL y la clave secreta del JWT)
+
+# 2. Levantar los servicios
+docker compose up -d
+
+# 3. Aplicar el esquema de base de datos
+npx prisma migrate dev
+
+# 4. Arrancar la API en modo desarrollo
+npm install
+npm run start:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---

@@ -23,7 +23,7 @@ model User {
   //Los que soy dueño
   ownedServers Server[]   @relation("OwnedServers")
 
-  //A los que me he unido
+  //A los que me he unido N:N
   memberServers Server[]  @relation("ServerMembers")
 
   messages Message[]                  
@@ -39,7 +39,7 @@ model Server {
   ownerId     Int
   owner       User      @relation("OwnedServers", fields: [ownerId], references: [id])
 
-  //relacion con los miembros
+  //relacion con los miembros N:N
   members     User[]    @relation("ServerMembers")
 
   channels    Channel[] // Un servidor tiene una lista de canales (Aqui se hace la relación)

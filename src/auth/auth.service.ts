@@ -27,6 +27,7 @@ export class AuthService {
         //Si es correcta generamos el TOKEN
         const payload = { sub: user.id, email: user.email };
         return {
+            //Metemos con los datos con la fimra para crear el token
             access_token: await this.jwtService.signAsync(payload),
         };
     }

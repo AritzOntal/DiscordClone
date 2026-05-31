@@ -20,6 +20,7 @@ export class ServersService {
           members: {
             connect: [
               { id: userId },
+              //El cliente puede mandar varios members (o ninguno), map transforma el array con memberId en cada vuelta
               ...(createServerDto.members?.map(memberId => ({ id: Number(memberId) })) ?? []),
             ]
           }
