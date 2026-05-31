@@ -9,7 +9,7 @@ import { MessagesModule } from './messages/messages.module';
 import { NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
-
+//Modulo padre del proyecto
   @Module({
     imports: [UsersModule, ServersModule, ChannelsModule, AuthModule, MessagesModule],
     controllers: [AppController],

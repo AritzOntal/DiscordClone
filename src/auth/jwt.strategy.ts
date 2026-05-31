@@ -2,19 +2,20 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 
-//Al hacer peticion LOGIN esta estrategy se registra en el Passport (jwt)
 
+//Para las peticiones protegidas usamos la librería PassportStrategy
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor() {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: 'SECRET', // La misma que usaste en JwtModule.register
+            secretOrKey: 'SECRET', // Esta tendra que ser la firma de AuthModule
         });
     }
 
     //Cuando passPort reconoce el token correcto, decodifica y se lo pasa aqui
+    //Ocurre en cada peticion protegida
     async validate(payload: any) {
         // Si el token es válido devolverá estos campos
         return { userId: payload.sub, email: payload.email };
